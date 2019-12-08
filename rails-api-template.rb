@@ -1,51 +1,57 @@
 run 'pgrep spring | xargs kill -9'
 
+# UTILITY CONSOLE COLORS
+########################################
+def colorize(txt)
+  puts "\e[47m\e[1m\e[30m#{txt}\e[0m\e[22m\e[0m"
+end
+
 # GEMFILE
 ########################################
 run 'rm Gemfile'
 file 'Gemfile', <<-RUBY
-source 'https://rubygems.org'
-ruby '#{RUBY_VERSION}'
+  source 'https://rubygems.org'
+  ruby '#{RUBY_VERSION}'
 
-gem 'rails'
-gem 'pg', '~> 0.21'
-gem 'redis', '~> 4.0'
-gem 'puma', '~> 3.11'
-gem 'jbuilder', '~> 2.5'
+  gem 'rails'
+  gem 'pg', '~> 0.21'
+  gem 'redis', '~> 4.0'
+  gem 'puma', '~> 3.11'
+  gem 'jbuilder', '~> 2.5'
 
-#{"gem 'bootsnap'" if Rails.version >= "5.2"}
-gem 'devise', '~> 4.6', '>= 4.6.2'
-gem 'devise-jwt', '~> 0.5.9'
-gem 'dotenv-rails', '~> 2.7', '>= 2.7.2'
+  #{"gem 'bootsnap'" if Rails.version >= "5.2"}
+  gem 'devise', '~> 4.6', '>= 4.6.2'
+  gem 'devise-jwt', '~> 0.5.9'
+  gem 'dotenv-rails', '~> 2.7', '>= 2.7.2'
 
-# Excel reader for seeds
-gem 'creek'
+  # Excel reader for seeds
+  gem 'creek'
 
-# active admin dep
-gem 'activeadmin', '~> 2.5.0'
-gem 'inherited_resources', '~> 1.11.0'
-gem 'active_admin_flat_skin', '~> 0.1.2'
-gem 'font-awesome-sass', '~> 5.11.2'
-gem 'activeadmin_quill_editor', '~> 0.2.0'
+  # active admin dep
+  gem 'activeadmin', '~> 2.5.0'
+  gem 'inherited_resources', '~> 1.11.0'
+  gem 'active_admin_flat_skin', '~> 0.1.2'
+  gem 'font-awesome-sass', '~> 5.11.2'
+  gem 'activeadmin_quill_editor', '~> 0.2.0'
 
-# Reduces boot times through caching; required in config/boot.rb
-gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
-# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
-gem 'rack-cors'
+  # Reduces boot times through caching(str) required in config/boot.rb
+  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
+  gem 'rack-cors'
 
-group :development do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'rails_real_favicon'
-  gem 'web-console', '>= 3.3.0'
-end
+  group :development do
+    # Call 'byebug' anywhere in the code to stop execution and get a debugger console
+    gem 'rails_real_favicon'
+    gem 'web-console', '>= 3.3.0'
+  end
 
-group :development, :test do
-  gem 'listen', '>= 3.0.5', '< 3.2'
-  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem 'spring'
-  gem 'spring-watcher-listen', '~> 2.0.0'
-  gem 'pry-rails'
-end
+  group :development, :test do
+    gem 'listen', '>= 3.0.5', '< 3.2'
+    # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
+    gem 'spring'
+    gem 'spring-watcher-listen', '~> 2.0.0'
+    gem 'pry-rails'
+  end
 
 RUBY
 
@@ -58,14 +64,14 @@ RUBY
 file 'Procfile', <<-YAML
 web: bundle exec puma -C config/puma.rb
 YAML
-p 'Procfile created'
+colorize '==> Procfile created'
 # README
 ########################################
 markdown_file_content = <<-MARKDOWN
 Rails app generated with [zakaryaa/jwt-devise-templates](https://github.com/zakaryaa/rails-api-template).
 MARKDOWN
 file 'README.md', markdown_file_content, force: true
-p 'README created'
+colorize '==> README created'
 # Generators
 ########################################
 
@@ -79,21 +85,25 @@ config.generators do |g|
     end
 RUBY
 environment generators
-p 'generators set'
+colorize '==> generators set'
 
 ########################################
 # AFTER BUNDLE
 ########################################
 after_bundle do
+  colorize '==> Start after bundle'
   run "mkdir -p app/assets/config && echo '{}' > app/assets/config/manifest.js"
+  colorize '==> Created empty manifest'
   # Generators: db
   ########################################
   rails_command 'db:drop db:create db:migrate'
+  colorize '==> Ran drop create & migrate DB'
 
   # Routes
   ########################################
   routes = <<-RUBY
     Rails.application.routes.draw do
+      devise_for :users, class_name: "User"
       namespace :api, :defaults => {:format => :json} do
         namespace :v1 do
           get 'users/current', to:'users#show'
@@ -104,6 +114,7 @@ after_bundle do
   run 'rm config/routes.rb'
   file 'config/routes.rb', routes, force: true
 
+  colorize '==> Update routes file'
 #   # Git ignore
 #   ########################################
   append_file '.gitignore', <<-TXT
@@ -151,10 +162,14 @@ after_bundle do
 
   TXT
 
+  colorize '==> Update gitignore file'
+
   # Devise install and controller init
   ########################################
   generate('devise:install')
   generate('devise', 'api/v1/user')
+
+  colorize '==> Install devise & generate user model'
 
   user_model = <<-RUBY
     class User < ApplicationRecord
@@ -185,6 +200,8 @@ after_bundle do
   run 'rm -rf app/models/api'
   file 'app/models/user.rb', user_model, force: true
 
+  colorize '==> Update user model'
+
   # App controller
   ########################################
   run 'rm app/controllers/application_controller.rb'
@@ -194,6 +211,7 @@ after_bundle do
     end
   RUBY
 
+  colorize '==> Created application controller'
   # Api controller
   ########################################
   #run "mkdir -p app/controllers/api/v1"
@@ -215,6 +233,7 @@ after_bundle do
     end
   RUBY
 
+  colorize '==> Created base api controller'
   # Api JWT migration
   ########################################
   file 'db/migrate/20190618141950_create_jwt_blacklists.rb', <<-RUBY
@@ -228,6 +247,7 @@ after_bundle do
     end
   RUBY
 
+  colorize '==> Created base JWT migration '
   # Api JWT model
   ########################################
   file 'app/models/jwt_blacklist.rb', <<-RUBY
@@ -237,28 +257,35 @@ after_bundle do
     end
   RUBY
 
+  colorize '==> Created base JWT model '
   # devise JWT config
   ########################################
   run 'rm config/initializers/devise.rb'
-  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/devise.rb > config/initializers/devise.rb'
+  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/master/devise.rb > config/initializers/devise.rb'
+
+  colorize '==> Update devise.rb initializer '
 
   # devise controller update
   ########################################
-  #run 'rm ./app/controllers/api/v1/registrations_controller.rb'
-  #run 'rm ./app/controllers/api/v1/sessions_controller.rb'
-  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/registrations_controller.rb > app/controllers/api/v1/user/registrations_controller.rb'
-  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/sessions_controller.rb > app/controllers/api/v1/user/sessions_controller.rb'
+  file './app/controllers/api/v1/user/registrations_controller.rb'
+  file './app/controllers/api/v1/user/sessions_controller.rb'
+  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/master/registrations_controller.rb> app/controllers/api/v1/user/registrations_controller.rb'
+  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/master/sessions_controller.rb> app/controllers/api/v1/user/sessions_controller.rb'
 
+  colorize '==> Update devise registration & session controllers '
   # Dotenv
   ########################################
+  secret = rake secret
   file '.env', <<-TXT
-  DEVISE_JWT_SECRET_KEY=#{rake secret}
+  DEVISE_JWT_SECRET_KEY=#{secret}
   TXT
+  colorize '==> Set DEVISE_JWT_SECRET_KEY '
 
 # migrate
   #######################################
   rails_command 'db:migrate'
 
+  colorize '==> Db migrate '
   # Clean up
   ########################################
   run "rm -rf 'app/assets/'"
