@@ -45,7 +45,7 @@ class Api::V1::User::SessionsController < Devise::SessionsController
   end
 
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:update, keys: [:email, :name, :e_consentement, :date_consentement, :birth_date, :phone_number])
+    devise_parameter_sanitizer.permit(:update, keys: [:email])
   end
 
 end

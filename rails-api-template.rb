@@ -19,7 +19,7 @@ file 'Gemfile', <<-RUBY
   gem 'puma', '~> 3.11'
   gem 'jbuilder', '~> 2.5'
 
-  #{"gem 'bootsnap'" if Rails.version >= "5.2"}
+  gem 'bootsnap'
   gem 'devise', '~> 4.6', '>= 4.6.2'
   gem 'devise-jwt', '~> 0.5.9'
   gem 'dotenv-rails', '~> 2.7', '>= 2.7.2'
@@ -55,10 +55,6 @@ file 'Gemfile', <<-RUBY
 
 RUBY
 
-# # Ruby version
-# ########################################
-# file '.ruby-version', RUBY_VERSION
-
 # Procfile
 ########################################
 file 'Procfile', <<-YAML
@@ -72,20 +68,7 @@ Rails app generated with [zakaryaa/jwt-devise-templates](https://github.com/zaka
 MARKDOWN
 file 'README.md', markdown_file_content, force: true
 colorize '==> README created'
-# Generators
-########################################
 
-generators = <<-RUBY
-config.generators do |g|
-      g.orm :active_record
-      g.template_engine :erb
-      g.assets false
-      g.helper false
-      g.test_framework  :test_unit, fixture: false
-    end
-RUBY
-environment generators
-colorize '==> generators set'
 
 ########################################
 # AFTER BUNDLE
@@ -94,27 +77,12 @@ after_bundle do
   colorize '==> Start after bundle'
   run "mkdir -p app/assets/config && echo '{}' > app/assets/config/manifest.js"
   colorize '==> Created empty manifest'
-  # Generators: db
+  # Database init
   ########################################
   rails_command 'db:drop db:create db:migrate'
   colorize '==> Ran drop create & migrate DB'
-
-  # Routes
   ########################################
-  routes = <<-RUBY
-    Rails.application.routes.draw do
-      devise_for :users, class_name: "User"
-      namespace :api, :defaults => {:format => :json} do
-        namespace :v1 do
-          get 'users/current', to:'users#show'
-        end
-      end
-    end
-  RUBY
-  run 'rm config/routes.rb'
-  file 'config/routes.rb', routes, force: true
 
-  colorize '==> Update routes file'
 #   # Git ignore
 #   ########################################
   append_file '.gitignore', <<-TXT
@@ -168,9 +136,35 @@ after_bundle do
   ########################################
   generate('devise:install')
   generate('devise', 'api/v1/user')
-
   colorize '==> Install devise & generate user model'
 
+    # Routes
+  ########################################
+  run 'rm config/routes.rb'
+  routes = <<-RUBY
+  Rails.application.routes.draw do
+    devise_for  :users, path: 'api/v1/user', class_name: "User",
+      controllers: {
+        registrations: 'api/v1/user/registrations',
+        sessions: 'api/v1/user/sessions',
+        passwords: 'api/v1/user/passwords'
+      }, defaults: { format: :json }
+
+    namespace :api, :defaults => {:format => :json} do
+      namespace :v1 do
+        get 'users/current', to:'users#show'
+      end
+    end
+  end
+  RUBY
+  file 'config/routes.rb', routes, force: true
+
+  colorize '==> Update routes file'
+  ########################################
+
+
+  # User Model update
+  ########################################
   user_model = <<-RUBY
     class User < ApplicationRecord
       # Include default devise modules. Others available are:
@@ -196,11 +190,12 @@ after_bundle do
 
     end
   RUBY
-
   run 'rm -rf app/models/api'
   file 'app/models/user.rb', user_model, force: true
 
   colorize '==> Update user model'
+  ########################################
+
 
   # App controller
   ########################################
@@ -210,8 +205,10 @@ after_bundle do
       skip_before_action :verify_authenticity_token
     end
   RUBY
-
   colorize '==> Created application controller'
+  ########################################
+
+
   # Api controller
   ########################################
   #run "mkdir -p app/controllers/api/v1"
@@ -232,8 +229,10 @@ after_bundle do
       end
     end
   RUBY
-
   colorize '==> Created base api controller'
+  ########################################
+
+
   # Api JWT migration
   ########################################
   file 'db/migrate/20190618141950_create_jwt_blacklists.rb', <<-RUBY
@@ -246,8 +245,10 @@ after_bundle do
       end
     end
   RUBY
-
   colorize '==> Created base JWT migration '
+  ########################################
+
+
   # Api JWT model
   ########################################
   file 'app/models/jwt_blacklist.rb', <<-RUBY
@@ -256,14 +257,16 @@ after_bundle do
       self.table_name = 'jwt_blacklist'
     end
   RUBY
-
   colorize '==> Created base JWT model '
+  ########################################
+
   # devise JWT config
   ########################################
   run 'rm config/initializers/devise.rb'
   run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/master/devise.rb > config/initializers/devise.rb'
 
   colorize '==> Update devise.rb initializer '
+  ########################################
 
   # devise controller update
   ########################################
@@ -271,24 +274,25 @@ after_bundle do
   file './app/controllers/api/v1/user/sessions_controller.rb'
   run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/master/registrations_controller.rb> app/controllers/api/v1/user/registrations_controller.rb'
   run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/master/sessions_controller.rb> app/controllers/api/v1/user/sessions_controller.rb'
-
   colorize '==> Update devise registration & session controllers '
+  ########################################
+
+  # migrate
+  #######################################
+    rails_command 'db:migrate RAILS_ENV=development'
+    colorize '==> Db migrate '
+  ########################################
+
   # Dotenv
   ########################################
-  secret = rake secret
-  file '.env', <<-TXT
-  DEVISE_JWT_SECRET_KEY=#{secret}
-  TXT
+  file '.env'
+  run "echo  'DEVISE_JWT_SECRET_KEY=#{SecureRandom.hex(64)}' > .env"
+
   colorize '==> Set DEVISE_JWT_SECRET_KEY '
+  ########################################
 
-# migrate
-  #######################################
-  rails_command 'db:migrate'
-
-  colorize '==> Db migrate '
   # Clean up
   ########################################
-  run "rm -rf 'app/assets/'"
   run "rm -rf 'lib/assets/'"
   run "rm -rf 'vendor/assets/'"
   run "rm -rf 'app/helpers/'"
