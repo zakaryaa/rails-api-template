@@ -14,7 +14,9 @@ rails new \
   RAILS_API_NAME
 ```
 
-```Curl request returns JWT token
+## Curl request returns JWT token
+
+```bash
 curl --request POST \
   --url http://localhost:3000/api/v1/user/sign_in \
   --header 'content-type: application/json' \
