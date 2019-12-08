@@ -293,7 +293,7 @@ after_bundle do
 
     # Seed file
   ########################################
-  file 'db/seed.rb', <<-RUBY
+  file 'db/seeds.rb', <<-RUBY
     User.create(email: 'example@domain.com', password: "password")
   RUBY
   rails_command 'db:seed RAILS_ENV=development'
