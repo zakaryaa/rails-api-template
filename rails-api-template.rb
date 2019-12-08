@@ -135,7 +135,7 @@ after_bundle do
   # Devise install and controller init
   ########################################
   generate('devise:install')
-  generate('devise', 'api/v1/user')
+  generate('devise', 'user')
   colorize '==> Install devise & generate user model'
 
     # Routes
@@ -290,6 +290,16 @@ after_bundle do
 
   colorize '==> Set DEVISE_JWT_SECRET_KEY '
   ########################################
+
+    # Seed file
+  ########################################
+  file 'db/seed.rb', <<-RUBY
+    User.create(email: 'example@domain.com', password: "password")
+  RUBY
+  rails_command 'db:seed RAILS_ENV=development'
+  colorize '==> Create a sample User in DB & run seed '
+
+
 
   # Clean up
   ########################################
