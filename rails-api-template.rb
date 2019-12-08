@@ -81,12 +81,6 @@ RUBY
 environment generators
 p 'generators set'
 
-'app/assets/'
-'lib/assets/'
-'vendor/assets/'
-'app/helpers/'
-'app/views/layouts/application.hmtl.erb'
-
 ########################################
 # AFTER BUNDLE
 ########################################
@@ -109,35 +103,6 @@ after_bundle do
   RUBY
   run 'rm config/routes.rb'
   file 'config/routes.rb', routes, force: true
-
-  user_model = <<-RUBY
-    class User < ApplicationRecord
-      # Include default devise modules. Others available are:
-      # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
-      # include Devise::JWT::RevocationStrategies::JTIMatcher
-
-      devise :database_authenticatable,
-      :registerable,
-      :recoverable,
-      :rememberable,
-      :validatable,
-      :jwt_authenticatable,
-      jwt_revocation_strategy: JwtBlacklist
-
-      @expires_in = nil
-      def expires_in
-        return @expires_in
-      end
-
-      def on_jwt_dispatch(token, payload)
-        @expires_in = payload['exp']
-      end
-
-    end
-  RUBY
-
-  run 'rm -rf app/models/api'
-  file 'app/models/user.rb', user_model, force: true
 
 #   # Git ignore
 #   ########################################
@@ -189,7 +154,36 @@ after_bundle do
   # Devise install and controller init
   ########################################
   generate('devise:install')
-  generate('devise', 'api/v1/User')
+  generate('devise', 'api/v1/user')
+
+  user_model = <<-RUBY
+    class User < ApplicationRecord
+      # Include default devise modules. Others available are:
+      # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+      # include Devise::JWT::RevocationStrategies::JTIMatcher
+
+      devise :database_authenticatable,
+      :registerable,
+      :recoverable,
+      :rememberable,
+      :validatable,
+      :jwt_authenticatable,
+      jwt_revocation_strategy: JwtBlacklist
+
+      @expires_in = nil
+      def expires_in
+        return @expires_in
+      end
+
+      def on_jwt_dispatch(token, payload)
+        @expires_in = payload['exp']
+      end
+
+    end
+  RUBY
+
+  run 'rm -rf app/models/api'
+  file 'app/models/user.rb', user_model, force: true
 
   # App controller
   ########################################
@@ -203,7 +197,7 @@ after_bundle do
   # Api controller
   ########################################
   run "mkdir -p app/controllers/api/v1"
-  file 'app/controllers/api/v1//base_api_controller.rb', <<-RUBY
+  file 'app/controllers/api/v1/base_api_controller.rb', <<-RUBY
     class Api::V1::BaseApiController < ActionController::API
       before_action :authenticate_user!
       before_action :configure_permitted_parameters, if: :devise_controller?
@@ -250,16 +244,16 @@ after_bundle do
 
   # devise controller update
   ########################################
-  run 'rm ./config/initializers/devise.rb'
-  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/registrations_controller.rb > ./app/controllers/api/v1/registrations_controller.rb'
-  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/sessions_controller.rb > ./app/controllers/api/v1/sessions_controller.rb'
+  run 'rm ./app/controllers/api/v1/registrations_controller.rb'
+  run 'rm ./app/controllers/api/v1/sessions_controller.rb'
+  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/registrations_controller.rb > ./app/controllers/api/v1/user/registrations_controller.rb'
+  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/sessions_controller.rb > ./app/controllers/api/v1/user/sessions_controller.rb'
 
   # Dotenv
   ########################################
   file '.env', <<-TXT
   DEVISE_JWT_SECRET_KEY=#{rake secret}
   TXT
-
 
 # migrate
   #######################################
