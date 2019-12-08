@@ -187,7 +187,7 @@ after_bundle do
 
   # App controller
   ########################################
-  run 'rm ./app/controllers/application_controller.rb'
+  run 'rm app/controllers/application_controller.rb'
   file 'app/controllers/application_controller.rb', <<-RUBY
     class ApplicationController < ActionController::Base
       skip_before_action :verify_authenticity_token
@@ -196,7 +196,7 @@ after_bundle do
 
   # Api controller
   ########################################
-  run "mkdir -p app/controllers/api/v1"
+  #run "mkdir -p app/controllers/api/v1"
   file 'app/controllers/api/v1/base_api_controller.rb', <<-RUBY
     class Api::V1::BaseApiController < ActionController::API
       before_action :authenticate_user!
@@ -239,15 +239,15 @@ after_bundle do
 
   # devise JWT config
   ########################################
-  run 'rm ./config/initializers/devise.rb'
-  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/devise.rb > ./config/initializers/devise.rb'
+  run 'rm config/initializers/devise.rb'
+  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/devise.rb > config/initializers/devise.rb'
 
   # devise controller update
   ########################################
-  run 'rm ./app/controllers/api/v1/registrations_controller.rb'
-  run 'rm ./app/controllers/api/v1/sessions_controller.rb'
-  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/registrations_controller.rb > ./app/controllers/api/v1/user/registrations_controller.rb'
-  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/sessions_controller.rb > ./app/controllers/api/v1/user/sessions_controller.rb'
+  #run 'rm ./app/controllers/api/v1/registrations_controller.rb'
+  #run 'rm ./app/controllers/api/v1/sessions_controller.rb'
+  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/registrations_controller.rb > app/controllers/api/v1/user/registrations_controller.rb'
+  run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/sessions_controller.rb > app/controllers/api/v1/user/sessions_controller.rb'
 
   # Dotenv
   ########################################
