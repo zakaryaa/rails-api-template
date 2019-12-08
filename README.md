@@ -13,3 +13,15 @@ rails new \
   -m https://raw.githubusercontent.com/zakaryaa/rails-api-template/master/rails-api-template.rb \
   RAILS_API_NAME
 ```
+
+```Curl request returns JWT token
+curl --request POST \
+  --url http://localhost:3000/api/v1/user/sign_in \
+  --header 'content-type: application/json' \
+  --data '{
+"user": {
+		"email": "example@domain.com",
+		"password": "password"
+	}
+}'
+```
