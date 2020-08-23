@@ -253,7 +253,7 @@ after_bundle do
   ########################################
   file 'app/models/jwt_denylist.rb', <<-RUBY
     class JwtDenylist < ApplicationRecord
-      include Devise::JWT::RevocationStrategies::Denylist
+      include Devise::JWT::RevocationStrategies::JwtDenylist
 
       self.table_name = 'jwt_denylist'
     end
