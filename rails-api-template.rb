@@ -21,7 +21,7 @@ file 'Gemfile', <<-RUBY
 
   gem 'bootsnap'
   gem 'devise', '~> 4.6', '>= 4.6.2'
-  gem 'devise-jwt', '~> 0.6.0'
+  gem 'devise-jwt', '~> 0.7.0'
   gem 'dotenv-rails', '~> 2.7', '>= 2.7.2'
 
   # Excel reader for seeds
@@ -253,7 +253,7 @@ after_bundle do
   ########################################
   file 'app/models/jwt_denylist.rb', <<-RUBY
     class JwtDenylist < ApplicationRecord
-      include Devise::JWT::RevocationStrategies::JwtDenylist
+      include Devise::JWT::RevocationStrategies::Denylist
 
       self.table_name = 'jwt_denylist'
     end
