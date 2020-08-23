@@ -21,7 +21,7 @@ file 'Gemfile', <<-RUBY
 
   gem 'bootsnap'
   gem 'devise', '~> 4.6', '>= 4.6.2'
-  gem 'devise-jwt', '~> 0.5.9'
+  gem 'devise-jwt', '~> 0.6.0'
   gem 'dotenv-rails', '~> 2.7', '>= 2.7.2'
 
   # Excel reader for seeds
@@ -43,6 +43,7 @@ file 'Gemfile', <<-RUBY
     # Call 'byebug' anywhere in the code to stop execution and get a debugger console
     gem 'rails_real_favicon'
     gem 'web-console', '>= 3.3.0'
+    gem 'annotate'
   end
 
   group :development, :test do
@@ -74,13 +75,13 @@ colorize '==> README created'
 # AFTER BUNDLE
 ########################################
 after_bundle do
-  colorize '==> Start after bundle'
+  colorize '==> After bundle starts'
   run "mkdir -p app/assets/config && echo '{}' > app/assets/config/manifest.js"
-  colorize '==> Created empty manifest'
+  colorize '==> Empty manifest file created'
   # Database init
   ########################################
-  rails_command 'db:drop db:create db:migrate'
-  colorize '==> Ran drop create & migrate DB'
+  rails_command 'db:create db:migrate'
+  colorize '==> created & migrated DB'
   ########################################
 
 #   # Git ignore
@@ -130,14 +131,14 @@ after_bundle do
 
   TXT
 
-  colorize '==> Update gitignore file'
+  colorize '==> .gitignore file updated'
 
   # Devise install and controller init
   ########################################
   generate('devise:install')
+  colorize '==> Devise authentication gem installed'
   generate('devise', 'user')
-  colorize '==> Install devise & generate user model'
-
+  colorize '==> Devise default User model generated'
     # Routes
   ########################################
   run 'rm config/routes.rb'
@@ -159,9 +160,8 @@ after_bundle do
   RUBY
   file 'config/routes.rb', routes, force: true
 
-  colorize '==> Update routes file'
+  colorize '==> Routes updated'
   ########################################
-
 
   # User Model update
   ########################################
@@ -177,7 +177,7 @@ after_bundle do
       :rememberable,
       :validatable,
       :jwt_authenticatable,
-      jwt_revocation_strategy: JwtBlacklist
+      jwt_revocation_strategy: JwtDenylist
 
       @expires_in = nil
       def expires_in
@@ -235,26 +235,27 @@ after_bundle do
 
   # Api JWT migration
   ########################################
-  file 'db/migrate/20190618141950_create_jwt_blacklists.rb', <<-RUBY
-    class CreateJwtBlacklists < ActiveRecord::Migration[5.2]
+  file 'db/migrate/20190618141950_create_jwt_denylist.rb', <<-RUBY
+    class CreateJwtDenylist < ActiveRecord::Migration[5.2]
       def change
-        create_table :jwt_blacklist do |t|
+        create_table :jwt_denylist do |t|
           t.string :jti, null: false
+          t.datetime :exp, null: false
         end
-        add_index :jwt_blacklist, :jti
+        add_index :jwt_denylist, :jti
       end
     end
   RUBY
   colorize '==> Created base JWT migration '
   ########################################
 
-
   # Api JWT model
   ########################################
-  file 'app/models/jwt_blacklist.rb', <<-RUBY
-    class JwtBlacklist < ApplicationRecord
-      include Devise::JWT::RevocationStrategies::Blacklist
-      self.table_name = 'jwt_blacklist'
+  file 'app/models/jwt_denylist.rb', <<-RUBY
+    class JwtDenylist < ApplicationRecord
+      include Devise::JWT::RevocationStrategies::Denylist
+
+      self.table_name = 'jwt_denylist'
     end
   RUBY
   colorize '==> Created base JWT model '
@@ -265,7 +266,7 @@ after_bundle do
   run 'rm config/initializers/devise.rb'
   run 'curl -L https://raw.githubusercontent.com/zakaryaa/rails-api-template/master/devise.rb > config/initializers/devise.rb'
 
-  colorize '==> Update devise.rb initializer '
+  colorize '==> devise.rb initializer updated'
   ########################################
 
   # devise controller update
