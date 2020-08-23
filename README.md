@@ -14,7 +14,16 @@ rails new \
   YOUR_PROJECT_NAME
 ```
 
-## Curl request returns JWT token
+## Just run
+
+```bash
+cd  YOUR_PROJECT_NAME
+rails s
+```
+
+and you're all set & ready to sketch your database models :)
+
+## Curl request returns JWT token (To test that devise default user is working fine)
 
 ```bash
 curl --request POST \
@@ -26,10 +35,4 @@ curl --request POST \
 		"password": "password"
 	}
 }'
-```
-
-#TODO
-
-```ruby
-config.webpacker.check_yarn_integrity = false
 ```
