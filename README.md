@@ -11,7 +11,7 @@ rails new \
   --skip-sprockets --skip-listen --skip-javascript --skip-turbolinks --skip-test --skip-system-test --skip-webpack-install \
   --api \
   -m https://raw.githubusercontent.com/zakaryaa/rails-api-template/master/rails-api-template.rb \
-  RAILS_API_NAME
+  YOUR_PROJECT_NAME
 ```
 
 ## Curl request returns JWT token
@@ -26,4 +26,10 @@ curl --request POST \
 		"password": "password"
 	}
 }'
+```
+
+#TODO
+
+```ruby
+config.webpacker.check_yarn_integrity = false
 ```
